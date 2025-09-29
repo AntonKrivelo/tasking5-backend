@@ -1,15 +1,24 @@
-const sqlite3 = require('sqlite3');
-const { open } = require('sqlite');
+// db.js
+const sqlite3 = require('sqlite3').verbose();
+const path = require('path');
 
-let dbInstance = null;
+// Путь к файлу базы (создастся автоматически при первом запуске)
+const dbPath = path.resolve(__dirname, 'database.sqlite');
+const db = new sqlite3.Database(dbPath);
 
-async function initDB() {
-  if (dbInstance) return dbInstance;
-  dbInstance = await open({
-    filename: process.env.SQLITE_PATH || './db.db',
-    driver: sqlite3.Database,
-  });
-  return dbInstance;
-}
+// Создание таблиц при старте
+db.serialize(() => {
+  db.run(`
+    CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      email TEXT UNIQUE NOT NULL,
+      password TEXT NOT NULL,
+      status TEXT DEFAULT 'active',
+      lastSeen TEXT DEFAULT CURRENT_TIMESTAMP,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+});
 
-module.exports = { initDB };
+module.exports = db;
