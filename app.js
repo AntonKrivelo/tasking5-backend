@@ -29,7 +29,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
-// Временно храним пользователей в массиве
 let users = [
   {
     id: '1',
