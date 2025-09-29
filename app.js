@@ -4,6 +4,8 @@ const cors = require('cors');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -11,19 +13,10 @@ var usersRouter = require('./routes/users');
 var app = express();
 const PORT = 4000;
 
-//cors
-
 app.use(cors());
-
-app.get('/products/:id', function (req, res, next) {
-  res.json({ msg: 'This is CORS-enabled for all origins!' });
-});
-
 app.listen(80, function () {
   console.log('CORS-enabled web server listening on port 80');
 });
-
-// view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
@@ -36,20 +29,69 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
-// catch 404 and forward to error handler
-app.use(function (req, res, next) {
-  next(createError(404));
-});
-// //post
+// Временно храним пользователей в массиве
+let users = [
+  {
+    id: '1',
+    name: 'John Doe',
+    email: 'john@example.com',
+    status: 'active',
+    lastSeen: '2025-09-28',
+  },
+  {
+    id: '2',
+    name: 'Jane Smith',
+    email: 'jane@example.com',
+    status: 'blocked',
+    lastSeen: '2025-09-25',
+  },
+];
 
-app.post('/', (req, res) => {
-  res.send('Got a POST request');
+app.get('/', (req, res) => {
+  res.json(users);
+});
+
+app.get('/admin/users', (req, res) => {
+  res.json(users);
+});
+
+app.post('/login', (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email and password are required' });
+  }
+
+  res.json({
+    message: 'success',
+    data: {
+      email,
+      password,
+    },
+  });
+});
+
+app.post('/register', (req, res) => {
+  const { email, password, name } = req.body;
+
+  if (!email || !password || !name) {
+    return res.status(400).json({ error: 'Name, Email and password are required' });
+  }
+
+  res.json({
+    message: 'success',
+    data: {
+      email,
+      password,
+      name,
+    },
+  });
 });
 
 // app.post('/register', (req, res) => {
 //   const { name, email, password } = req.body;
 
-//   if (!name || !email || !password) {
+//   if (!name  !email  !password) {
 //     return res.status(400).json({ message: 'Заполните все поля' });
 //   }
 
@@ -70,7 +112,7 @@ app.use(function (err, req, res, next) {
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
   // render the error page
-  res.status(err.status || 500);
+  res.status(err.status, 500);
   res.render('error');
 });
 
