@@ -40,16 +40,14 @@ let users = [
   },
 ];
 
-// Транспорт для отправки почты
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'anton.krivelo98@gmail.com', // замени
-    pass: 'nvwd ccqk peui sace', // замени
+    user: 'anton.krivelo98@gmail.com',
+    pass: 'nvwd ccqk peui sace',
   },
 });
 
-// 📌 Регистрация
 app.post('/register', async (req, res) => {
   console.log('BODY:', req.body);
   const { email, password, name } = req.body;
@@ -58,24 +56,21 @@ app.post('/register', async (req, res) => {
     return res.status(400).json({ error: 'Name, Email and password are required' });
   }
 
-  // Проверка на существующего пользователя
   const exists = users.find((u) => u.email === email);
   if (exists) {
     return res.status(400).json({ error: 'User already exists' });
   }
 
-  // Добавляем нового пользователя
   const newUser = {
     id: String(users.length + 1),
     name,
     email,
-    password, // ⚠️ хранить пароль в открытом виде нельзя, позже нужно хэшировать!
+    password,
     status: 'pending',
     lastSeen: new Date().toISOString().split('T')[0],
   };
   users.push(newUser);
 
-  // Ссылка для активации
   const activationLink = `http://localhost:4000/activate?email=${encodeURIComponent(email)}`;
 
   try {
@@ -100,7 +95,6 @@ app.post('/register', async (req, res) => {
   }
 });
 
-// 📌 Активация
 app.get('/activate', (req, res) => {
   const { email } = req.query;
   const user = users.find((u) => u.email === email);
