@@ -35,6 +35,46 @@ app.use(function (err, req, res, next) {
   res.render('error');
 });
 
+
+const app = express();
+
+// API
+app.get("/api/hello", (req, res) => res.json({ msg: "Привет!" }));
+
+// React build
+app.use(express.static(path.join(__dirname, "frontend/build")));
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "frontend/build/index.html"));
+});
+
+app.listen(process.env.PORT || 3000);
+
+ 
+// RAILWAY
+
+import express from "express";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const app = express();
+
+// API
+app.get("/api/hello", (req, res) => res.json({ msg: "Привет!" }));
+
+// React build
+app.use(express.static(path.join(__dirname, "frontend/build")));
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "frontend/build/index.html"));
+});
+
+app.listen(process.env.PORT || 4000);
+//RAILWAY
+
 app.post('/register', (req, res) => {
   const { name, email, password } = req.body;
 
