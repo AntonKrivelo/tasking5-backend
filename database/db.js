@@ -5,7 +5,7 @@ const db = new Database('mydb.sqlite');
 db.prepare(
   `
   CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     email TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
@@ -13,7 +13,7 @@ db.prepare(
     last_login TEXT,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP
   )
-`,
+`
 ).run();
 
 module.exports = db;
