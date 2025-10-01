@@ -1,18 +1,17 @@
-const db = require('./database/db.js');
-var createError = require('http-errors');
-var express = require('express');
-const cors = require('cors');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
-const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
+import db from './database/db.js';
+import createError from 'http-errors';
+import express from 'express';
+import cors from 'cors';
+import path from 'path';
+import cookieParser from 'cookie-parser';
+import logger from 'morgan';
+import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
+import indexRouter from './routes/index.js'; // добавь .js
+import { fileURLToPath } from 'url';
 
-const app = express();
-var indexRouter = require('./routes/index');
-
-// CommonJS способ для __dirname
-const __dirname = path.resolve();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Middleware
 app.use(cors());
@@ -146,4 +145,4 @@ app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
 });
 
-module.exports = app;
+export default app;
