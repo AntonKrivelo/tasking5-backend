@@ -43,7 +43,7 @@ app.post('/register', (req, res) => {
   }
 
   try {
-    const userId = crypto.randomUUID();
+    const userId = crypto.randomUUID(); // строка UUID
 
     const stmt = db.prepare(`
       INSERT INTO users (id, name, email, password)
@@ -81,9 +81,11 @@ app.post('/login', (req, res) => {
 
   const updatedUser = { ...user, last_login: now };
 
-  const token = jwt.sign({ id: user.id, email: user.email, status: user.status }, 'MY_SECRET_KEY', {
-    expiresIn: '1h',
-  });
+  const token = jwt.sign(
+    { id: user.id, email: user.email, status: user.status },
+    'MY_SECRET_KEY', // храни в .env
+    { expiresIn: '1h' },
+  );
 
   res.json({
     message: 'successes login',
@@ -94,6 +96,7 @@ app.post('/login', (req, res) => {
 
 app.get('/users', (req, res) => {
   try {
+    // выбираем всех пользователей, сортируем по last_login (сначала новые)
     const stmt = db.prepare(`
       SELECT id, name, email, status, last_login, created_at
       FROM users
@@ -111,13 +114,14 @@ app.get('/users', (req, res) => {
 const activateByEmail = async () => {};
 
 app.delete('/users', (req, res) => {
-  const { ids } = req.body;
+  const { ids } = req.body; // ожидаем массив id
 
   if (!Array.isArray(ids) || ids.length === 0) {
     return res.status(400).json({ error: 'Need array with ids for remove users' });
   }
 
   try {
+    // создаём SQL с плейсхолдерами (?, ?, ?)
     const placeholders = ids.map(() => '?').join(',');
     const stmt = db.prepare(`DELETE FROM users WHERE id IN (${placeholders})`);
 
@@ -125,7 +129,7 @@ app.delete('/users', (req, res) => {
 
     res.json({
       message: 'users deleted',
-      deleted: result.changes,
+      deleted: result.changes, // сколько реально удалилось
     });
   } catch (err) {
     console.error('Delete error:', err);
@@ -136,6 +140,7 @@ app.delete('/users', (req, res) => {
 app.patch('/users/status', (req, res) => {
   const { ids, status } = req.body;
 
+  // допустимые статусы
   const allowedStatuses = ['unverified', 'active', 'blocked'];
 
   if (!Array.isArray(ids) || ids.length === 0) {
@@ -147,14 +152,16 @@ app.patch('/users/status', (req, res) => {
   }
 
   try {
+    // создаём SQL с плейсхолдерами (?, ?, ?)
     const placeholders = ids.map(() => '?').join(',');
     const stmt = db.prepare(`UPDATE users SET status = ? WHERE id IN (${placeholders})`);
 
+    // первый аргумент — статус, дальше все id
     const result = stmt.run(status, ...ids);
 
     res.json({
       message: 'Статус обновлён',
-      updated: result.changes,
+      updated: result.changes, // сколько строк реально изменилось
     });
   } catch (err) {
     console.error('Ошибка при обновлении статуса:', err);

@@ -14,5 +14,4 @@ db.prepare(
   )
 `,
 ).run();
-
 module.exports = db;
