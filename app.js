@@ -9,6 +9,7 @@ const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const indexRouter = require('./routes/index');
 const app = express();
+require('dotenv').config();
 
 app.use(cors());
 app.set('views', path.join(__dirname, 'views'));
@@ -46,8 +47,8 @@ app.post('/register', async (req, res) => {
       port: 465,
       secure: true,
       auth: {
-        user: 'anton.krivelo98@gmail.com',
-        pass: 'vlpz uima xzct tdkn',
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_PASS,
       },
     });
 
