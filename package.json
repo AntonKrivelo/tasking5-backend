@@ -1,19 +1,26 @@
 {
   "name": "tasking5-backend",
-  "version": "1.0.0",
-  "main": "server.js",
-  "type": "commonjs",
+  "version": "0.0.0",
+  "private": true,
   "scripts": {
-    "start": "node server.js",
-    "postinstall": "npm rebuild sqlite3 --build-from-source=false"
+  "start": "node server.js",
+  "postinstall": "npm rebuild sqlite3 --build-from-source=false"
   },
   "dependencies": {
+    "bcrypt": "^6.0.0",
+    "better-sqlite3": "9.4.3",
+    "cookie-parser": "~1.4.4",
     "cors": "^2.8.5",
-    "express": "^4.18.2",
-    "http-errors": "^2.0.0",
+    "debug": "~2.6.9",
+    "dotenv": "^17.2.2",
+    "express": "~4.16.1",
+    "http-errors": "~1.6.3",
+    "jade": "~1.11.0",
     "jsonwebtoken": "^9.0.2",
-    "morgan": "^1.10.0",
-    "nodemailer": "^6.9.4",
-    "sqlite3": "^5.1.6"
+    "morgan": "~1.9.1",
+    "nodemailer": "^7.0.6",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^5.1.7",
+    "uuid": "^13.0.0"
   }
 }
