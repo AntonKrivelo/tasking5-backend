@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
   "start": "node server.js",
-  "build": "NPM_CONFIG_BUILD_FROM_SOURCE=false npm install && npm run build"
+  "install": "npm install --omit=dev --build-from-source=false"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
