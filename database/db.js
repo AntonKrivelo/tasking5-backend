@@ -1,5 +1,4 @@
 const Database = require('better-sqlite3');
-
 const db = new Database('mydb.sqlite');
 
 db.prepare(
@@ -13,7 +12,7 @@ db.prepare(
     last_login TEXT,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP
   )
-`
+`,
 ).run();
 
 module.exports = db;
