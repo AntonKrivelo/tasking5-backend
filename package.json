@@ -2,10 +2,11 @@
   "name": "tasking5-backend",
   "version": "0.0.0",
   "private": true,
+  "install": "npm install --build-from-source=false",
 
   "scripts": {
     "start": "node server.js",
-    "build": "cd frontend/tasking5 && npm install && npm run build"
+    "postinstall": "npm install --build-from-source=false"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
