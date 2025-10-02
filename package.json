@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
   "start": "node server.js",
-  "postinstall": "npm rebuild sqlite3 --build-from-source=false"
+  "install": "npm install --omit=dev --build-from-source=false"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
