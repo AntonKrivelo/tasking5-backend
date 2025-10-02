@@ -13,9 +13,7 @@ var indexRouter = require('./routes/index');
 var app = express();
 
 app.use(cors());
-app.listen(4000, function () {
-  console.log('CORS-enabled web server listening on port 4000');
-});
+
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
@@ -43,7 +41,7 @@ app.post('/register', (req, res) => {
   }
 
   try {
-    const userId = crypto.randomUUID(); // строка UUID
+    const userId = crypto.randomUUID();
 
     const stmt = db.prepare(`
       INSERT INTO users (id, name, email, password)
@@ -81,11 +79,9 @@ app.post('/login', (req, res) => {
 
   const updatedUser = { ...user, last_login: now };
 
-  const token = jwt.sign(
-    { id: user.id, email: user.email, status: user.status },
-    'MY_SECRET_KEY', // храни в .env
-    { expiresIn: '1h' },
-  );
+  const token = jwt.sign({ id: user.id, email: user.email, status: user.status }, 'MY_SECRET_KEY', {
+    expiresIn: '1h',
+  });
 
   res.json({
     message: 'successes login',
@@ -96,7 +92,6 @@ app.post('/login', (req, res) => {
 
 app.get('/users', (req, res) => {
   try {
-    // выбираем всех пользователей, сортируем по last_login (сначала новые)
     const stmt = db.prepare(`
       SELECT id, name, email, status, last_login, created_at
       FROM users
@@ -114,14 +109,13 @@ app.get('/users', (req, res) => {
 const activateByEmail = async () => {};
 
 app.delete('/users', (req, res) => {
-  const { ids } = req.body; // ожидаем массив id
+  const { ids } = req.body;
 
   if (!Array.isArray(ids) || ids.length === 0) {
     return res.status(400).json({ error: 'Need array with ids for remove users' });
   }
 
   try {
-    // создаём SQL с плейсхолдерами (?, ?, ?)
     const placeholders = ids.map(() => '?').join(',');
     const stmt = db.prepare(`DELETE FROM users WHERE id IN (${placeholders})`);
 
@@ -129,7 +123,7 @@ app.delete('/users', (req, res) => {
 
     res.json({
       message: 'users deleted',
-      deleted: result.changes, // сколько реально удалилось
+      deleted: result.changes,
     });
   } catch (err) {
     console.error('Delete error:', err);
@@ -140,32 +134,29 @@ app.delete('/users', (req, res) => {
 app.patch('/users/status', (req, res) => {
   const { ids, status } = req.body;
 
-  // допустимые статусы
   const allowedStatuses = ['unverified', 'active', 'blocked'];
 
   if (!Array.isArray(ids) || ids.length === 0) {
-    return res.status(400).json({ error: 'Нужен массив id пользователей' });
+    return res.status(400).json({ error: 'We need an array of user IDs' });
   }
 
   if (!allowedStatuses.includes(status)) {
-    return res.status(400).json({ error: 'Недопустимый статус' });
+    return res.status(400).json({ error: 'Invalid status' });
   }
 
   try {
-    // создаём SQL с плейсхолдерами (?, ?, ?)
     const placeholders = ids.map(() => '?').join(',');
     const stmt = db.prepare(`UPDATE users SET status = ? WHERE id IN (${placeholders})`);
 
-    // первый аргумент — статус, дальше все id
     const result = stmt.run(status, ...ids);
 
     res.json({
-      message: 'Статус обновлён',
-      updated: result.changes, // сколько строк реально изменилось
+      message: 'Status updated',
+      updated: result.changes,
     });
   } catch (err) {
-    console.error('Ошибка при обновлении статуса:', err);
-    res.status(500).json({ error: 'Ошибка сервера' });
+    console.error('Error when updating the status:', err);
+    res.status(500).json({ error: 'Server error' });
   }
 });
 
@@ -182,13 +173,13 @@ app.get('/users/:id', (req, res) => {
     const user = stmt.get(id);
 
     if (!user) {
-      return res.status(404).json({ error: 'Пользователь не найден' });
+      return res.status(404).json({ error: 'The user was not found' });
     }
 
     res.json({ user });
   } catch (err) {
-    console.error('Ошибка при получении пользователя:', err);
-    res.status(500).json({ error: 'Ошибка сервера' });
+    console.error('Error when receiving the user:', err);
+    res.status(500).json({ error: 'Server error' });
   }
 });
 
