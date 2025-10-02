@@ -1,39 +1,32 @@
 const db = require('./database/db.js');
-var createError = require('http-errors');
-var express = require('express');
+const express = require('express');
 const cors = require('cors');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
-const jwt = require('jsonwebtoken');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
 const crypto = require('crypto');
-
-var indexRouter = require('./routes/index');
-
-var app = express();
+const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer');
+const indexRouter = require('./routes/index');
+const app = express();
 
 app.use(cors());
-
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
-
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-
 app.use('/', indexRouter);
-
 app.use(function (err, req, res, next) {
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
-
   res.status(err.status, 500);
   res.render('error');
 });
 
-app.post('/register', (req, res) => {
+app.post('/register', async (req, res) => {
   const { name, email, password } = req.body;
 
   if (!name || !email || !password) {
@@ -42,20 +35,66 @@ app.post('/register', (req, res) => {
 
   try {
     const userId = crypto.randomUUID();
-
     const stmt = db.prepare(`
       INSERT INTO users (id, name, email, password)
       VALUES (?, ?, ?, ?)
     `);
     stmt.run(userId, name, email, password);
 
-    res.json({ message: 'user registered', id: userId });
+    let transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
+      auth: {
+        user: 'anton.krivelo98@gmail.com',
+        pass: 'vlpz uima xzct tdkn',
+      },
+    });
+
+    const activationLink = `http://localhost:4000/activate/${userId}`;
+
+    try {
+      await transporter.sendMail({
+        from: `"MyApp" <anton.krivelo98@gmail.com>`,
+        to: email,
+        subject: 'Activate your account',
+        text: `Hello ${name}, please activate your account: ${activationLink}`,
+        html: `<p>Hello <b>${name}</b>,</p>
+               <p>Click <a href="${activationLink}">here</a> to activate your account.</p>`,
+      });
+    } catch (mailErr) {
+      console.error('Email send error:', mailErr);
+      return res.status(500).json({ error: 'Registration ok, but email not sent' });
+    }
+
+    res.json({ message: 'User registered! Check your email for activation link.', id: userId });
   } catch (err) {
     if (err.code === 'SQLITE_CONSTRAINT_UNIQUE') {
       return res.status(400).json({ error: 'Email already exist' });
     }
     console.error(err);
     res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.get('/activate/:id', (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const stmt = db.prepare(`
+      UPDATE users SET status = 'active'
+      WHERE id = ? AND status = 'unverified'
+    `);
+    const result = stmt.run(id);
+
+    if (result.changes === 0) {
+      return res.status(400).send('Invalid or already activated account');
+    }
+
+    res.send('Your account has been activated! You can now login.');
+  } catch (err) {
+    console.error('Activation error:', err);
+    res.status(500).send('Server error');
   }
 });
 
@@ -106,7 +145,6 @@ app.get('/users', (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
-const activateByEmail = async () => {};
 
 app.delete('/users', (req, res) => {
   const { ids } = req.body;
